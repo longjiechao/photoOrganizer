@@ -1,0 +1,15 @@
+Requisitos:
+    Navegacion por carpetas del PC.
+    Mostrar icono carpeta e miniaturas de las imágenes (minimo soloo jpg)
+    Midas:
+        Verse en tamaños diferentes (2)
+        Se pueden definir tamaños
+        Un slider para definir tamaños
+    Seleccionar varias carpetar y moverlos a otra carpeta
+    En la vista de las miniaturas se deben ver sus caracteristicas como nombre e fecha ultima modificación
+    Poder seleccionar imagenes favoritas
+        Codigo de color
+        Estrellas o números
+    La selecciond de fav se tiene que mantener (un fichero donde pone los favs?)
+    Filtro de imagenes por favs o números
+    Al seleccionar una imagen, se debe cambiar al siguiente o anterior, de la misma carpeta
