@@ -104,10 +104,9 @@ class UI{
         hb = new HBox();
         for (int i = 0; i < filePath.listFiles().length; i++) {
             Image image;
-            ImageView imageView = new ImageView();
+            ImageView imageView;
             vb = new VBox();
             if (filePath.listFiles()[i].getName().endsWith(".jpg")) {
-                vb = new VBox();
                 //Imagen
                 image = new Image(new FileInputStream(filePath.listFiles()[i]));
                 imageView = new ImageView(image);
