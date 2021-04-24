@@ -74,6 +74,7 @@ class UI{
     private File filePath;
     private Stage primaryStage;
     private boolean fav = false;
+    private String[] directories;
     
     public UI(String filePath, Stage primaryStage){
         this.filePath = new File(filePath);
@@ -128,6 +129,7 @@ class UI{
         for (int i = 0; i < this.filePath.listFiles().length; i++) {
             Image image;
             ImageView imageView;
+            DirectoryView directoryView;
             vb = new VBox();
             if (this.filePath.listFiles()[i].getName().endsWith(".jpg")) {
                 //Imagen
@@ -155,24 +157,31 @@ class UI{
                 
             }else if(filePath.listFiles()[i].isDirectory()){
                 image = new Image(new FileInputStream("./src/icons/folder.png"));
-                imageView = new ImageView(image);
-                imageView.setPreserveRatio(true);
-                imageView.setFitWidth(100);
-                imageView.setFitHeight(100);
-                imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+                directoryView = new DirectoryView(image, filePath.listFiles()[i]);
+                directoryView.setPreserveRatio(true);
+                directoryView.setFitWidth(100);
+                directoryView.setFitHeight(100);
+                txt = new Text(filePath.listFiles()[i].getName());
+                directoryView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
                     @Override
                     public void handle(MouseEvent event) {
                         if(event.getButton().equals(MouseButton.PRIMARY)){
                             if(event.getClickCount() == 2){
-                                System.out.println("Double clicked");
+                                DirectoryView dv = (DirectoryView)event.getSource();
+                                setFilePath(dv.getDirectoryPath());
+                                System.out.println(dv.getDirectoryPath());
+                                try {
+                                    load();
+                                } catch (IOException ex) {
+                                    Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }
                         }
                     }
                 });
                 
                 //Nombre Imagen
-                txt = new Text(filePath.listFiles()[i].getName());
-                vb.getChildren().addAll(imageView,txt);
+                vb.getChildren().addAll(directoryView,txt);
                 vb.setAlignment(Pos.BASELINE_CENTER);
                 fp.getChildren().add(vb);
             }
