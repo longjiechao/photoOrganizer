@@ -9,9 +9,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -19,8 +26,11 @@ import javafx.scene.control.Control;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -34,7 +44,9 @@ import javafx.stage.Stage;
 public class PhotoOrganizer extends Application {
 
     public void start(Stage primaryStage) throws IOException {
-        UI ui = new UI("C:/Users/LJChao-PC/Desktop/Pack 1/img", primaryStage);
+        Path path = Paths.get("./src/photoorganizer/fotoTest");
+        File directory = new File(path.toAbsolutePath().normalize().toString());
+        UI ui = new UI(directory.getAbsolutePath(), primaryStage);
         ui.load();
     }
 
@@ -61,6 +73,7 @@ public class PhotoOrganizer extends Application {
 class UI{
     private File filePath;
     private Stage primaryStage;
+    private boolean fav = false;
     
     public UI(String filePath, Stage primaryStage){
         this.filePath = new File(filePath);
@@ -74,8 +87,7 @@ class UI{
     public File getFilePath() {
         return filePath;
     }
-
-    public void setFilePath(File filePath) {
+    public void setFilePath(File filePath){
         this.filePath = filePath;
     }
     
@@ -93,42 +105,82 @@ class UI{
         button = new Button(">");
         hb.getChildren().add(button);
         button = new Button("^");
+        button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                setFilePath(new File(getFilePath().getParentFile().getAbsolutePath()));
+                System.out.println(getFilePath().getParentFile().getAbsolutePath());
+                try {
+                    load();
+                } catch (IOException ex) {
+                    Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
         hb.getChildren().add(button);
-        TextField txtf = new TextField(filePath.getPath());
+        TextField txtf = new TextField(this.filePath.getPath());
         HBox.setHgrow(txtf, Priority.ALWAYS);
         hb.getChildren().add(txtf);
         hb.setSpacing(10);
         bPane.setTop(hb);
 
         //Center
-        hb = new HBox();
-        for (int i = 0; i < filePath.listFiles().length; i++) {
+        FlowPane fp = new FlowPane();
+        for (int i = 0; i < this.filePath.listFiles().length; i++) {
             Image image;
             ImageView imageView;
             vb = new VBox();
-            if (filePath.listFiles()[i].getName().endsWith(".jpg")) {
+            if (this.filePath.listFiles()[i].getName().endsWith(".jpg")) {
                 //Imagen
-                image = new Image(new FileInputStream(filePath.listFiles()[i]));
+                image = new Image(new FileInputStream(this.filePath.listFiles()[i]));
                 imageView = new ImageView(image);
                 imageView.setPreserveRatio(true);
-                imageView.setFitWidth(200);
-                
+                imageView.setFitWidth(100);
+                imageView.setFitHeight(100);
+                imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                        if(event.getButton().equals(MouseButton.PRIMARY)){
+                            if(event.getClickCount() == 2){
+                                System.out.println("Double clicked");
+                            }
+                        }
+                    }
+                });
                 
                 //Nombre Imagen
                 txt = new Text(filePath.listFiles()[i].getName());
                 vb.getChildren().addAll(imageView,txt);
                 vb.setAlignment(Pos.BASELINE_CENTER);
+                fp.getChildren().add(vb);
                 
-                //txt = new Text("File: " + f.listFiles()[i].getName() + " Last Time Modified: " + date.format(f.listFiles()[i].lastModified()));
-            }//else if(f.listFiles()[i].isDirectory()){
-            //txt = new Text("Directory: " + f.listFiles()[i].getName());
-            //}
-            //vb.getChildren().add(txt);
-            hb.getChildren().add(vb);
+            }else if(filePath.listFiles()[i].isDirectory()){
+                image = new Image(new FileInputStream("./src/icons/folder.png"));
+                imageView = new ImageView(image);
+                imageView.setPreserveRatio(true);
+                imageView.setFitWidth(100);
+                imageView.setFitHeight(100);
+                imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                        if(event.getButton().equals(MouseButton.PRIMARY)){
+                            if(event.getClickCount() == 2){
+                                System.out.println("Double clicked");
+                            }
+                        }
+                    }
+                });
+                
+                //Nombre Imagen
+                txt = new Text(filePath.listFiles()[i].getName());
+                vb.getChildren().addAll(imageView,txt);
+                vb.setAlignment(Pos.BASELINE_CENTER);
+                fp.getChildren().add(vb);
+            }
         }
         
-        hb.setSpacing(50);
-        bPane.setCenter(hb);
+        fp.setHgap(10);
+        fp.setVgap(10);
+        bPane.setCenter(fp);
 
         vb = new VBox();
         txt = new Text("Tree");
