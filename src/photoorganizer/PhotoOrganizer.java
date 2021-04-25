@@ -60,9 +60,7 @@ public class PhotoOrganizer extends Application {
         UI ui = new UI(directory.getAbsolutePath(), primaryStage, 1000, 500);
         ui.load();
     }
-
-
-
+    
     public static void main(String[] args) {
         launch(args);
     }
@@ -143,6 +141,7 @@ class UI{
         //Top
         hb = new HBox();
         IconButton iButton;
+        
         //BACK
         image = new Image(new FileInputStream("./src/icons/back.png"));
         iButton = new IconButton(image);
@@ -180,12 +179,12 @@ class UI{
                         }
                     } 
                 }
-
                 for(int i = 0; i < directories.size(); i++){
                     System.out.println("I: " + i + " = " + directories.get(i));
                 }
             }
         });
+        
         //FORWARD
         image = new Image(new FileInputStream("./src/icons/forward.png"));
         iButton = new IconButton(image);
@@ -208,6 +207,7 @@ class UI{
             }
         });
         hb.getChildren().add(iButton);
+        
         //PARENT
         image = new Image(new FileInputStream("./src/icons/parent.png"));
         iButton = new IconButton(image);
@@ -291,11 +291,13 @@ class UI{
                 DirectoryView directoryView;
                 vb = new VBox();
                 if (this.filePath.listFiles()[i].getName().endsWith(".jpg")) {
+                    
                     //Imagen
                     imageInfo = new ImageInfo(this.filePath.listFiles()[i]);
                     imageInfo.setPreserveRatio(true);
                     imageInfo.setFitWidth(100);
                     imageInfo.setFitHeight(100);
+                    
                     //Button de imagen. Al dar doble click aparece la imagen al lado
                     imageInfo.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
                         @Override
