@@ -55,9 +55,8 @@ public class FavEditor {
         for(int i = 0; i < nodeList.getLength(); i++){
             Node node = nodeList.item(i);
             Element e = (Element) node;  
-            String path = e.getElementsByTagName("path").item(0).getTextContent().replaceAll("\\s", "");
+            String path = e.getElementsByTagName("path").item(0).getTextContent();
             allImages.add(path);
-            System.out.println(path);
         }
     }
     
@@ -74,8 +73,18 @@ public class FavEditor {
         saveFile();
         reloadArray();
     }
-    public void deleteElement(){
-        
+    public void deleteElement(String oldImage) throws TransformerException{
+        if(allImages.contains(oldImage)){
+            int indexOld = allImages.indexOf(oldImage);
+            for(int i = 0; i < nodeList.getLength(); i++){
+                if(indexOld == i ){
+                    System.out.println("EYEYEY");
+                    Node node = nodeList.item(i);
+                    node.getParentNode().removeChild(node);
+                }
+            }
+        }
+        saveFile();
         reloadArray();
     }
     public boolean contains(String check){

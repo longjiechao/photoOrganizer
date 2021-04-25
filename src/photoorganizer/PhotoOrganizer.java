@@ -44,6 +44,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -51,7 +54,7 @@ import javafx.stage.Stage;
  */
 public class PhotoOrganizer extends Application {
 
-    public void start(Stage primaryStage) throws IOException {
+    public void start(Stage primaryStage) throws IOException, SAXException, ParserConfigurationException{
         Path path = Paths.get("./src/photoorganizer/fotoTest");
         File directory = new File(path.toAbsolutePath().normalize().toString());
         UI ui = new UI(directory.getAbsolutePath(), primaryStage, 1000, 500);
@@ -62,19 +65,6 @@ public class PhotoOrganizer extends Application {
 
     public static void main(String[] args) {
         launch(args);
-        /*File f1 = new File("C:\\Users\\LJChao-PC\\Desktop\\Pack 1\\img");
-        SimpleDateFormat date = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-        System.out.println(f1.getPath());
-        for(int i = 0; i < f1.listFiles().length; i++){
-            if(f1.listFiles()[i].getName().endsWith(".jpg")){
-                System.out.println("File: " + f1.listFiles()[i].getName() + " Last Time Modified: " + date.format(f1.listFiles()[i].lastModified()));
-            }else if(f1.listFiles()[i].isDirectory()){
-                System.out.println("Directory: " + f1.listFiles()[i].getName());
-            }
-            else{
-                System.out.println("ey");
-            }
-        }*/
     }
 }
 
@@ -83,20 +73,21 @@ class UI{
     private int anchura;
     private File filePath; //Directorio actual
     private Stage primaryStage; //STAGE
-    private boolean fav = false; 
     private ArrayList<File> directories = new ArrayList<File>(); //Guarda el "historial" de navegacion, sirve para los botones de BAKC y FORWARD
     private int directoriesIndex = -1; //INDEX de indica en que posición del ArrayList estás
     private TextField field; //coge el campo TextField, que se usa para navegar
     private ImageInfo currentImgInfo;
-
     private BorderPane infoImagen; //Box que muestra toda la informacion de la imagen
+    private static final double scale = 0.7; //escala de imagen por defecto
     
-    public UI(String filePath, Stage primaryStage, int altura, int anchura){
+    private FavEditor fe;
+    
+    public UI(String filePath, Stage primaryStage, int altura, int anchura) throws IOException, SAXException, ParserConfigurationException{
         this.filePath = new File(filePath);
         this.primaryStage = primaryStage;
         this.altura = altura;
         this.anchura = anchura;
-        
+        fe = new FavEditor();
     }
 
     public int getAltura() {
@@ -131,7 +122,7 @@ class UI{
         this.field = field;
     }
     
-    public void load() throws IOException{
+    public void load() throws IOException, SAXException, ParserConfigurationException{
         createAppUI();
     }
 
@@ -142,7 +133,7 @@ class UI{
         this.filePath = filePath;
     }
     
-    public void createAppUI() throws IOException {
+    public void createAppUI() throws IOException, SAXException, ParserConfigurationException {
         BorderPane bPane = new BorderPane();
         VBox vb;
         HBox hb;
@@ -151,7 +142,6 @@ class UI{
 
         //Top
         hb = new HBox();
-        Button button;
         IconButton iButton;
         //BACK
         image = new Image(new FileInputStream("./src/icons/back.png"));
@@ -171,6 +161,10 @@ class UI{
                             load();
                         } catch (IOException ex) {
                             Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (SAXException ex) {
+                            Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (ParserConfigurationException ex) {
+                            Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }else if(directoriesIndex > -1){
                         setFilePath(directories.get(directoriesIndex));
@@ -179,6 +173,10 @@ class UI{
                             load();
                         } catch (IOException ex) {
                             Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (SAXException ex) {
+                            Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (ParserConfigurationException ex) {
+                            Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     } 
                 }
@@ -186,8 +184,6 @@ class UI{
                 for(int i = 0; i < directories.size(); i++){
                     System.out.println("I: " + i + " = " + directories.get(i));
                 }
-                System.out.println("INDEX: " + directoriesIndex);
-                System.out.println("SIZE: " + directories.size());
             }
         });
         //FORWARD
@@ -202,6 +198,10 @@ class UI{
                     try {
                         load();
                     } catch (IOException ex) {
+                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SAXException ex) {
+                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ParserConfigurationException ex) {
                         Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
@@ -230,6 +230,10 @@ class UI{
                     try {
                         load();
                     } catch (IOException ex) {
+                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SAXException ex) {
+                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ParserConfigurationException ex) {
                         Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }else{
@@ -264,6 +268,10 @@ class UI{
                 try {
                     load();
                 } catch (IOException ex) {
+                    Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SAXException ex) {
+                    Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ParserConfigurationException ex) {
                     Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -304,14 +312,37 @@ class UI{
                                         column = new VBox();
                                         
                                         CheckBox cb = new CheckBox("Favorito");
+                                        if(fe.contains(currentImgInfo.getFile().getAbsolutePath())){
+                                            cb.setSelected(true);
+                                        }else{
+                                            cb.setSelected(false);
+                                        }
                                         cb.selectedProperty().addListener(new ChangeListener<Boolean>() {
                                             @Override
                                             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                                                 if(newValue == true){
                                                     System.out.println("Check");
-                                                    System.out.println(currentImgInfo.getFile());
+                                                    try {
+                                                        fe.addElement(currentImgInfo.getFile().toString());
+                                                    } catch (TransformerException ex) {
+                                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                                    }
                                                 }else{
                                                     System.out.println("Uncheck");
+                                                    try {
+                                                        fe.deleteElement(currentImgInfo.getFile().toString());
+                                                    } catch (TransformerException ex) {
+                                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                                    }
+                                                }
+                                                try {
+                                                    load();
+                                                } catch (IOException ex) {
+                                                    Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                                } catch (SAXException ex) {
+                                                    Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                                } catch (ParserConfigurationException ex) {
+                                                    Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
                                                 }
                                             }
                                         });
@@ -328,6 +359,21 @@ class UI{
                                         //imageScroll.setPrefViewportHeight(getAnchura()/2);
                                         
                                         Slider slider = new Slider();
+                                        slider.setMax(2);
+                                        slider.setMin(0.5);
+                                        slider.setOnMouseReleased(evento -> {
+                                            currentImgInfo.setFitWidth(getAnchura()*scale*slider.getValue());
+                                            currentImgInfo.setFitHeight(getAltura()*scale*slider.getValue());
+                                            try {
+                                                load();
+                                            } catch (IOException ex) {
+                                                Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                            } catch (SAXException ex) {
+                                                Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                            } catch (ParserConfigurationException ex) {
+                                                Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                            }
+                                        });
                                         column.getChildren().addAll(cb, imageScroll, slider);
                                         
                                         infoImagen.setCenter(column);
@@ -335,7 +381,7 @@ class UI{
                                         //Mostrar el nombre de la imagen
                                         row = new HBox();
                                         Text imageNombreTitulo = new Text("Fichero: ");
-                                        imageNombreTitulo.setStyle("-fx-font-weight: bold");
+                                        imageNombreTitulo.setStyle("-fx-font-weight: bold;");
                                         Text imageNombre = new Text(currentImgInfo.getFile().getName());
                                         row.getChildren().addAll(imageNombreTitulo, imageNombre);
                                         infoImagenBot.getChildren().add(row);
@@ -355,6 +401,10 @@ class UI{
                                     } catch (FileNotFoundException ex) {
                                         Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
                                     } catch (IOException ex) {
+                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (SAXException ex) {
+                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (ParserConfigurationException ex) {
                                         Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
                                     }
                                     
@@ -404,6 +454,10 @@ class UI{
                                         load();
                                     } catch (IOException ex) {
                                         Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (SAXException ex) {
+                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (ParserConfigurationException ex) {
+                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
                                     }
                                 }
                             }
@@ -430,10 +484,152 @@ class UI{
         }
         
         //Lateral izquierdo
+        //Titulo
         vb = new VBox();
+        hb = new HBox();
+        ImageView starIcon = new ImageView(new Image(new FileInputStream("./src/icons/star.png")));
+        starIcon.setFitHeight(18);
+        starIcon.setFitHeight(18);
+        starIcon.setPreserveRatio(true);
         txt = new Text("Favoritos");
-        vb.getChildren().add(txt);
-        bPane.setLeft(vb);
+        txt.setStyle("-fx-font-weight: bold; -fx-underline: true ;");
+        hb.getChildren().addAll(starIcon, txt);
+        vb.getChildren().add(hb);
+        
+        
+        //Mostrar todos los favoritos
+        ScrollPane sp = new ScrollPane();
+        for(int i = 0; i < fe.getAllImages().size(); i++){
+            Path path = Paths.get(fe.getAllImages().get(i));
+            if (Files.exists(path)) {
+                System.out.println(path.toAbsolutePath());
+                hb = new HBox();
+                ImageInfo imageIcon = new ImageInfo(path.toFile());
+                imageIcon.setFitHeight(18);
+                imageIcon.setFitHeight(18);
+                imageIcon.setPreserveRatio(true);
+                imageIcon.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+                        @Override
+                        public void handle(MouseEvent event) {
+                            if(event.getButton().equals(MouseButton.PRIMARY)){
+                                if(event.getClickCount() == 2){
+                                    infoImagen = new BorderPane();
+                                    currentImgInfo = (ImageInfo)event.getSource();
+                                    try {
+                                        VBox infoImagenBot = new VBox();
+                                        HBox row;
+                                        VBox column;
+                                        //Mostrar Imagen
+                                        column = new VBox();
+                                        
+                                        CheckBox cb = new CheckBox("Favorito");
+                                        if(fe.contains(currentImgInfo.getFile().getAbsolutePath())){
+                                            cb.setSelected(true);
+                                        }else{
+                                            cb.setSelected(false);
+                                        }
+                                        
+                                        cb.selectedProperty().addListener(new ChangeListener<Boolean>() {
+                                            @Override
+                                            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                                                if(newValue == true){
+                                                    System.out.println("Check");
+                                                    try {
+                                                        fe.addElement(currentImgInfo.getFile().toString());
+                                                    } catch (TransformerException ex) {
+                                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                                    }
+                                                }else{
+                                                    System.out.println("Uncheck");
+                                                    try {
+                                                        fe.deleteElement(currentImgInfo.getFile().toString());
+                                                    } catch (TransformerException ex) {
+                                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                                    }
+                                                }
+                                                try {
+                                                    load();
+                                                } catch (IOException ex) {
+                                                    Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                                } catch (SAXException ex) {
+                                                    Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                                } catch (ParserConfigurationException ex) {
+                                                    Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                                }
+                                            }
+                                        });
+                                        
+                                        ScrollPane imageScroll = new ScrollPane();
+                                        //imageI = new ImageInfo(imageSelected.getFile());
+                                        currentImgInfo.setPreserveRatio(true);
+                                        imageScroll.setContent(currentImgInfo);
+                                        imageScroll.setFitToHeight(true);
+                                        imageScroll.setFitToWidth(true);
+                                        imageScroll.setPrefViewportWidth(getAnchura()*scale);
+                                        //imageScroll.setPrefViewportHeight(getAnchura()/2);
+                                        
+                                        Slider slider = new Slider();
+                                        slider.setMax(2);
+                                        slider.setMin(0.5);
+                                        slider.setOnMouseReleased(evento -> {
+                                            currentImgInfo.setFitWidth(getAnchura()*scale*slider.getValue());
+                                            currentImgInfo.setFitHeight(getAltura()*scale*slider.getValue());
+                                            try {
+                                                load();
+                                            } catch (IOException ex) {
+                                                Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                            } catch (SAXException ex) {
+                                                Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                            } catch (ParserConfigurationException ex) {
+                                                Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                            }
+                                        });
+                                        column.getChildren().addAll(cb, imageScroll, slider);
+                                        
+                                        infoImagen.setCenter(column);
+                                        
+                                        //Mostrar el nombre de la imagen
+                                        row = new HBox();
+                                        Text imageNombreTitulo = new Text("Fichero: ");
+                                        imageNombreTitulo.setStyle("-fx-font-weight: bold;");
+                                        Text imageNombre = new Text(currentImgInfo.getFile().getName());
+                                        row.getChildren().addAll(imageNombreTitulo, imageNombre);
+                                        infoImagenBot.getChildren().add(row);
+                                        
+                                        //Mostrar última modificacion
+                                        row = new HBox();
+                                        Text imageLastModTitulo = new Text("Última modificación: ");
+                                        imageLastModTitulo.setStyle("-fx-font-weight: bold");
+                                        SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+                                        Text imageLastMod = new Text(df.format(currentImgInfo.getFile().lastModified()));
+                                        row.getChildren().addAll(imageLastModTitulo, imageLastMod);
+                                        infoImagenBot.getChildren().add(row);
+                                        
+                                       
+                                        infoImagen.setBottom(infoImagenBot);
+                                        load();
+                                    } catch (FileNotFoundException ex) {
+                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (IOException ex) {
+                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (SAXException ex) {
+                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (ParserConfigurationException ex) {
+                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                    }
+                                    
+                                }
+                            }
+                        }
+                    });
+                txt = new Text(path.getFileName().toString());
+                hb.getChildren().addAll(imageIcon, txt);
+                vb.getChildren().add(hb);
+                sp.setContent(vb);
+            }
+        }
+        
+        bPane.setLeft(sp);
         
         //Lateral derecho
         bPane.setRight(infoImagen);

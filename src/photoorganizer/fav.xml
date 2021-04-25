@@ -1,12 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><favoritos>
-    <imagen>
-        <path>
-            C:/xampp/htdocs/photoOrganizer/src/photoorganizer/fotoTest/jd25yqv8xsf31.jpg
-        </path>
-    </imagen>
-    <imagen>
-        <path>
-            C:/xampp/htdocs/photoOrganizer/src/photoorganizer/fotoTest/jd25yqv8xsf31.jpg
-        </path>
-    </imagen>
-<imagen><path>NEW TEST</path></imagen><imagen><path>NEW TEST</path></imagen></favoritos>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><favoritos><imagen><path>C:\xampp\htdocs\photoOrganizer\src\photoorganizer\fotoTest\tb8o67ulruu61.jpg</path></imagen><imagen><path>C:\xampp\htdocs\photoOrganizer\src\photoorganizer\fotoTest\jd25yqv8xsf31.jpg</path></imagen></favoritos>
