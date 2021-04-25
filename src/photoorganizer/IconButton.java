@@ -14,6 +14,7 @@ import javafx.scene.image.ImageView;
  *
  * @author LJChao
  */
+//Clase de Botón, pero en vez de texto, imagen
 public class IconButton extends Button{
     public IconButton(Image iv) {
         ImageView image = new ImageView(iv);

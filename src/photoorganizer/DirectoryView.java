@@ -13,6 +13,8 @@ import javafx.scene.image.ImageView;
  *
  * @author LJ
  */
+//Classe ImageView pero que coge el Path del directorio.
+
 public class DirectoryView extends ImageView{
     private File directoryPath;
     

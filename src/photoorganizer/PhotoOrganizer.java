@@ -13,19 +13,24 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -49,7 +54,7 @@ public class PhotoOrganizer extends Application {
     public void start(Stage primaryStage) throws IOException {
         Path path = Paths.get("./src/photoorganizer/fotoTest");
         File directory = new File(path.toAbsolutePath().normalize().toString());
-        UI ui = new UI(directory.getAbsolutePath(), primaryStage);
+        UI ui = new UI(directory.getAbsolutePath(), primaryStage, 1000, 500);
         ui.load();
     }
 
@@ -74,16 +79,48 @@ public class PhotoOrganizer extends Application {
 }
 
 class UI{
-    private File filePath;
-    private Stage primaryStage;
-    private boolean fav = false;
-    private ArrayList<File> directories = new ArrayList<File>();
-    private int directoriesIndex = -1;
-    private TextField field;
+    private int altura;
+    private int anchura;
+    private File filePath; //Directorio actual
+    private Stage primaryStage; //STAGE
+    private boolean fav = false; 
+    private ArrayList<File> directories = new ArrayList<File>(); //Guarda el "historial" de navegacion, sirve para los botones de BAKC y FORWARD
+    private int directoriesIndex = -1; //INDEX de indica en que posición del ArrayList estás
+    private TextField field; //coge el campo TextField, que se usa para navegar
+    private ImageInfo currentImgInfo;
+
+    private BorderPane infoImagen; //Box que muestra toda la informacion de la imagen
     
-    public UI(String filePath, Stage primaryStage){
+    public UI(String filePath, Stage primaryStage, int altura, int anchura){
         this.filePath = new File(filePath);
         this.primaryStage = primaryStage;
+        this.altura = altura;
+        this.anchura = anchura;
+        
+    }
+
+    public int getAltura() {
+        return altura;
+    }
+
+    public void setAltura(int altura) {
+        this.altura = altura;
+    }
+
+    public int getAnchura() {
+        return anchura;
+    }
+
+    public void setAnchura(int anchura) {
+        this.anchura = anchura;
+    }
+    
+    public ImageInfo getCurrentImgInfo() {
+        return currentImgInfo;
+    }
+
+    public void setCurrentImgInfo(ImageInfo currentImgInfo) {
+        this.currentImgInfo = currentImgInfo;
     }
 
     public TextField getField() {
@@ -93,8 +130,6 @@ class UI{
     public void setField(TextField field) {
         this.field = field;
     }
-    
-    
     
     public void load() throws IOException{
         createAppUI();
@@ -184,7 +219,7 @@ class UI{
                         directories.add(getFilePath());
                         directoriesIndex++;
                     }else if(directoriesIndex < directories.size()-1){
-                        directories.subList(directoriesIndex, directories.size()).clear();
+                        directories.subList(directoriesIndex+1, directories.size()).clear();
                         directories.add(getFilePath());
                         directoriesIndex++;
                     }else{
@@ -218,7 +253,7 @@ class UI{
                     directories.add(getFilePath());
                     directoriesIndex++;
                 }else if(directoriesIndex < directories.size()-1){
-                    directories.subList(directoriesIndex, directories.size()).clear();
+                    directories.subList(directoriesIndex+1, directories.size()).clear();
                     directories.add(getFilePath());
                     directoriesIndex++;
                 }else{
@@ -238,27 +273,91 @@ class UI{
         bPane.setTop(hb);
 
         //Center
+        //Mostrar los contenidos
+        //Mostrar las imagenes
         if (Files.exists(this.filePath.toPath())) {
             ScrollPane scroll = new ScrollPane();
             FlowPane fp = new FlowPane();
             for (int i = 0; i < this.filePath.listFiles().length; i++) {
-                ImageView imageView;
+                ImageInfo imageInfo;
                 DirectoryView directoryView;
                 vb = new VBox();
                 if (this.filePath.listFiles()[i].getName().endsWith(".jpg")) {
                     //Imagen
-                    image = new Image(new FileInputStream(this.filePath.listFiles()[i]));
-                    imageView = new ImageView(image);
-                    imageView.setPreserveRatio(true);
-                    imageView.setFitWidth(100);
-                    imageView.setFitHeight(100);
-
-                    imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+                    imageInfo = new ImageInfo(this.filePath.listFiles()[i]);
+                    imageInfo.setPreserveRatio(true);
+                    imageInfo.setFitWidth(100);
+                    imageInfo.setFitHeight(100);
+                    //Button de imagen. Al dar doble click aparece la imagen al lado
+                    imageInfo.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
                         @Override
                         public void handle(MouseEvent event) {
                             if(event.getButton().equals(MouseButton.PRIMARY)){
                                 if(event.getClickCount() == 2){
-                                    System.out.println("Double clicked");
+                                    infoImagen = new BorderPane();
+                                    currentImgInfo = (ImageInfo)event.getSource();
+                                    try {
+                                        VBox infoImagenBot = new VBox();
+                                        HBox row;
+                                        VBox column;
+                                        //Mostrar Imagen
+                                        column = new VBox();
+                                        
+                                        CheckBox cb = new CheckBox("Favorito");
+                                        cb.selectedProperty().addListener(new ChangeListener<Boolean>() {
+                                            @Override
+                                            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                                                if(newValue == true){
+                                                    System.out.println("Check");
+                                                    System.out.println(currentImgInfo.getFile());
+                                                }else{
+                                                    System.out.println("Uncheck");
+                                                }
+                                            }
+                                        });
+                                        
+                                        ScrollPane imageScroll = new ScrollPane();
+                                        //imageI = new ImageInfo(imageSelected.getFile());
+                                        currentImgInfo.setPreserveRatio(true);
+                                        currentImgInfo.setFitWidth(getAnchura()*0.7);
+                                        currentImgInfo.setFitHeight(getAltura()*0.7);
+                                        imageScroll.setContent(currentImgInfo);
+                                        imageScroll.setFitToHeight(true);
+                                        imageScroll.setFitToWidth(true);
+                                        imageScroll.setPrefViewportWidth(getAnchura()*0.7);
+                                        //imageScroll.setPrefViewportHeight(getAnchura()/2);
+                                        
+                                        Slider slider = new Slider();
+                                        column.getChildren().addAll(cb, imageScroll, slider);
+                                        
+                                        infoImagen.setCenter(column);
+                                        
+                                        //Mostrar el nombre de la imagen
+                                        row = new HBox();
+                                        Text imageNombreTitulo = new Text("Fichero: ");
+                                        imageNombreTitulo.setStyle("-fx-font-weight: bold");
+                                        Text imageNombre = new Text(currentImgInfo.getFile().getName());
+                                        row.getChildren().addAll(imageNombreTitulo, imageNombre);
+                                        infoImagenBot.getChildren().add(row);
+                                        
+                                        //Mostrar última modificacion
+                                        row = new HBox();
+                                        Text imageLastModTitulo = new Text("Última modificación: ");
+                                        imageLastModTitulo.setStyle("-fx-font-weight: bold");
+                                        SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+                                        Text imageLastMod = new Text(df.format(currentImgInfo.getFile().lastModified()));
+                                        row.getChildren().addAll(imageLastModTitulo, imageLastMod);
+                                        infoImagenBot.getChildren().add(row);
+                                        
+                                       
+                                        infoImagen.setBottom(infoImagenBot);
+                                        load();
+                                    } catch (FileNotFoundException ex) {
+                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (IOException ex) {
+                                        Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
+                                    }
+                                    
                                 }
                             }
                         }
@@ -266,10 +365,10 @@ class UI{
 
                     //Nombre Imagen
                     txt = new Text(filePath.listFiles()[i].getName());
-                    vb.getChildren().addAll(imageView,txt);
+                    vb.getChildren().addAll(imageInfo,txt);
                     vb.setAlignment(Pos.BASELINE_CENTER);
                     fp.getChildren().add(vb);
-
+                //Mostrar los directorios
                 }else if(filePath.listFiles()[i].isDirectory()){
                     image = new Image(new FileInputStream("./src/icons/folder.png"));
                     directoryView = new DirectoryView(image, filePath.listFiles()[i]);
@@ -330,14 +429,20 @@ class UI{
             bPane.setCenter(txt);
         }
         
-
+        //Lateral izquierdo
         vb = new VBox();
-        txt = new Text("Tree");
+        txt = new Text("Favoritos");
         vb.getChildren().add(txt);
         bPane.setLeft(vb);
+        
+        //Lateral derecho
+        bPane.setRight(infoImagen);
+        
+        //Abajo
+        
 
         //End
-        Scene scene = new Scene(bPane, 800, 500);
+        Scene scene = new Scene(bPane, getAltura(), getAnchura());
         
         primaryStage.getIcons().add(new Image(new FileInputStream("./src/icons/ThePolaroid.png")));
         primaryStage.setTitle("Photo Organizer - Longjie Chao");
