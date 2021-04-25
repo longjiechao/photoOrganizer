@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><favoritos>
+<favoritos>
     <imagen>
         <path>
             C:/xampp/htdocs/photoOrganizer/src/photoorganizer/fotoTest/jd25yqv8xsf31.jpg
@@ -9,4 +9,4 @@
             C:/xampp/htdocs/photoOrganizer/src/photoorganizer/fotoTest/jd25yqv8xsf31.jpg
         </path>
     </imagen>
-<imagen><path>NEW TEST</path></imagen><imagen><path>NEW TEST</path></imagen></favoritos>
+</favoritos>
